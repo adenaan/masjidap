@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type {
   SiteConfigRow,
   EventRow,
@@ -12,13 +11,27 @@ import type {
 
 export const API_BASE = 'https://masjidaltaubah.co.za/api';
 
-export const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 20000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// Helper function for fetch requests
+async function fetchApi<T>(endpoint: string): Promise<T | null> {
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const json = await response.json();
+    return json.data || null;
+  } catch (error) {
+    console.error(`Error fetching ${endpoint}:`, error);
+    return null;
+  }
+}
 
 export type ApiResponse<T> = {
   ok: boolean;
@@ -42,100 +55,53 @@ export function toAbsoluteUrl(url: string): string {
 export const apiClient = {
   // Site configuration
   getSiteConfig: async (): Promise<SiteConfigRow | null> => {
-    try {
-      const response = await api.get<ApiResponse<SiteConfigRow>>('/content/site');
-      return response.data.data || null;
-    } catch (error) {
-      console.error('Error fetching site config:', error);
-      return null;
-    }
+    return await fetchApi<SiteConfigRow>('/content/site');
   },
 
   // Events
   getEvents: async (): Promise<EventRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<EventRow[]>>('/events');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      return [];
-    }
+    const data = await fetchApi<EventRow[]>('/events');
+    return data || [];
   },
 
   // Programs
   getPrograms: async (): Promise<ProgramRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<ProgramRow[]>>('/programs');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching programs:', error);
-      return [];
-    }
+    const data = await fetchApi<ProgramRow[]>('/programs');
+    return data || [];
   },
 
   // Contacts
   getContacts: async (): Promise<ContactRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<ContactRow[]>>('/contacts');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-      return [];
-    }
+    const data = await fetchApi<ContactRow[]>('/contacts');
+    return data || [];
   },
 
   // Gallery
   getGallery: async (): Promise<GalleryRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<GalleryRow[]>>('/gallery');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching gallery:', error);
-      return [];
-    }
+    const data = await fetchApi<GalleryRow[]>('/gallery');
+    return data || [];
   },
 
   // Footer links
   getFooterLinks: async (): Promise<FooterLinkRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<FooterLinkRow[]>>('/footer-links');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching footer links:', error);
-      return [];
-    }
+    const data = await fetchApi<FooterLinkRow[]>('/footer-links');
+    return data || [];
   },
 
   // Announcements - public endpoint
   getAnnouncements: async (): Promise<AnnouncementRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<AnnouncementRow[]>>('/announcements');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching announcements:', error);
-      return [];
-    }
+    const data = await fetchApi<AnnouncementRow[]>('/announcements');
+    return data || [];
   },
 
   // Single announcement by slug
   getAnnouncementBySlug: async (slug: string): Promise<AnnouncementRow | null> => {
-    try {
-      const response = await api.get<ApiResponse<AnnouncementRow>>(`/announcements/${slug}`);
-      return response.data.data || null;
-    } catch (error) {
-      console.error('Error fetching announcement:', error);
-      return null;
-    }
+    return await fetchApi<AnnouncementRow>(`/announcements/${slug}`);
   },
 
   // Announcement categories
   getAnnouncementCategories: async (): Promise<AnnouncementCategoryRow[]> => {
-    try {
-      const response = await api.get<ApiResponse<AnnouncementCategoryRow[]>>('/announcement-categories');
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching announcement categories:', error);
-      return [];
-    }
+    const data = await fetchApi<AnnouncementCategoryRow[]>('/announcement-categories');
+    return data || [];
   },
 };
